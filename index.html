@@ -10,40 +10,50 @@
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
-    background: #050505;
+    background: radial-gradient(circle at top, #0b0b0b, #020202);
     color: white;
+    overflow-x: hidden;
 }
 
 header {
     text-align: center;
-    padding: 20px;
-    font-size: 28px;
+    padding: 25px;
+    font-size: 30px;
     color: gold;
+    animation: fadeDown 1s ease;
 }
 
 .container {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 25px;
     flex-wrap: wrap;
-    padding: 20px;
+    padding: 30px;
 }
 
 .card {
-    background: #111;
+    background: rgba(255,215,0,0.05);
     border: 1px solid rgba(255,215,0,0.2);
     padding: 20px;
-    border-radius: 15px;
-    width: 220px;
+    border-radius: 18px;
+    width: 230px;
     text-align: center;
+    transition: 0.4s;
+    animation: fadeUp 0.8s ease;
+}
+
+.card:hover {
+    transform: translateY(-10px) scale(1.03);
+    box-shadow: 0 0 25px rgba(255,215,0,0.3);
 }
 
 button {
-    background: gold;
+    background: linear-gradient(45deg, gold, #bfa100);
     border: none;
     padding: 10px;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
+    font-weight: 600;
 }
 
 .modal {
@@ -54,25 +64,36 @@ button {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.9);
-    z-index: 9999; /* FIX: pastikan popup muncul di atas */
+    z-index: 9999;
 }
 
 .modal-content {
     background: #111;
-    margin: 10% auto;
+    margin: 8% auto;
     padding: 20px;
-    width: 320px;
-    border-radius: 15px;
+    width: 340px;
+    border-radius: 18px;
+    border: 1px solid gold;
+    animation: zoomIn 0.4s ease;
 }
 
 .payment-option {
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid gold;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid rgba(255,215,0,0.3);
     cursor: pointer;
+    border-radius: 10px;
+    transition: 0.3s;
 }
 
-.selected { background: gold; color:black; }
+.payment-option:hover {
+    background: rgba(255,215,0,0.1);
+}
+
+.selected {
+    background: gold;
+    color: black;
+}
 
 .toast {
     position: fixed;
@@ -80,9 +101,10 @@ button {
     right: 20px;
     background: gold;
     color: black;
-    padding: 10px;
-    border-radius: 5px;
+    padding: 10px 15px;
+    border-radius: 8px;
     display: none;
+    animation: fadeIn 0.3s;
 }
 
 .invoice {
@@ -91,6 +113,28 @@ button {
     padding:20px;
     margin:20px;
     border:1px solid gold;
+    border-radius:15px;
+    animation: fadeUp 0.6s ease;
+}
+
+input[type="file"]{
+    margin-top:10px;
+    color:white;
+}
+
+@keyframes fadeUp {
+    from {opacity:0; transform:translateY(30px)}
+    to {opacity:1; transform:translateY(0)}
+}
+
+@keyframes fadeDown {
+    from {opacity:0; transform:translateY(-30px)}
+    to {opacity:1; transform:translateY(0)}
+}
+
+@keyframes zoomIn {
+    from {transform:scale(0.7); opacity:0}
+    to {transform:scale(1); opacity:1}
 }
 </style>
 </head>
@@ -123,14 +167,13 @@ button {
 <h3>Pilih Payment</h3>
 <p id="produk"></p>
 
-<div style="margin-bottom:15px;">
-    <img src="QRIS.jpg" width="180" style="border-radius:12px; box-shadow:0 0 15px rgba(255,215,0,0.4);">
-    <p style="font-size:12px; opacity:0.7;">Scan QR untuk pembayaran</p>
-</div>
+<img src="QRIS.jpg" width="150" style="border-radius:10px"><br>
 
 <div class="payment-option" onclick="selectPayment('DANA 082247254189')">DANA <button onclick="copy('082247254189')">Copy</button></div>
 <div class="payment-option" onclick="selectPayment('OVO 085829260507')">OVO <button onclick="copy('085829260507')">Copy</button></div>
 <div class="payment-option" onclick="selectPayment('GOPAY 085829260507')">GOPAY <button onclick="copy('085829260507')">Copy</button></div>
+
+<input type="file" id="bukti">
 
 <br>
 <button onclick="createInvoice()">Bayar</button>
@@ -144,19 +187,12 @@ button {
 <script>
 let product="";
 let payment="";
+let proof="";
 
 function buy(n,h){
-product = n + " Rp" + h;
-const popup = document.getElementById('popup');
-const produkText = document.getElementById('produk');
-
-if(!popup || !produkText){
-    console.error('Element popup atau produk tidak ditemukan');
-    return;
-}
-
-produkText.innerText = product;
-popup.style.display = 'block';
+product=n+" Rp"+h;
+document.getElementById('produk').innerText=product;
+document.getElementById('popup').style.display='block';
 }
 
 function closePopup(){document.getElementById('popup').style.display='none';}
@@ -178,13 +214,17 @@ setTimeout(()=>t.style.display='none',1500);
 function createInvoice(){
 if(payment==""){alert('Pilih payment');return;}
 
+let file=document.getElementById('bukti').files[0];
+proof = file ? file.name : 'Belum upload';
+
 let id="ORD"+Math.floor(Math.random()*100000);
 let html=`<h3>INVOICE</h3>
 <p>Order ID: ${id}</p>
 <p>Produk: ${product}</p>
 <p>Metode: ${payment}</p>
+<p>Bukti: ${proof}</p>
 <p>Status: Menunggu Pembayaran</p>
-<button onclick="confirmPay('${id}')">Saya Sudah Bayar</button>`;
+<button onclick="confirmPay('${id}')">Konfirmasi ke Admin</button>`;
 
 document.getElementById('invoice').innerHTML=html;
 document.getElementById('invoice').style.display='block';
@@ -192,11 +232,11 @@ closePopup();
 }
 
 function confirmPay(id){
-let nomor="6285829260507";
-let pesan=`Konfirmasi pembayaran ${id} untuk ${product}`;
+let nomor="62882017626783";
+let pesan=`Konfirmasi pembayaran ${id}\nProduk: ${product}\nMetode: ${payment}`;
 window.location.href=`https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
 }
 </script>
 
 </body>
-</html>
+</
