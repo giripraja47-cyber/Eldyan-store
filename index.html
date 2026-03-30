@@ -232,11 +232,19 @@ closePopup();
 }
 
 function confirmPay(id){
-let nomor="62882017626783";
-let pesan=`Konfirmasi pembayaran ${id}\nProduk: ${product}\nMetode: ${payment}`;
-window.location.href=`https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
+    let nomor = "6285829260507";
+
+    let pesan = `Halo Admin ELDYAN STORE
+Order ID: ${id}
+Produk: ${product}
+Metode: ${payment}
+
+Saya sudah melakukan pembayaran.
+Berikut bukti transfer saya kirim di chat ini.`;
+
+    window.location.href =
+    `https://wa.me/${nomor}?text=${encodeURIComponent(pesan)}`;
 }
 </script>
 
 </body>
-</
